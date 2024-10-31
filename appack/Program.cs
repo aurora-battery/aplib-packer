@@ -1,5 +1,8 @@
 ﻿using System;
 using System.IO;
+using System.IO.Hashing;
+using System.Linq;
+using System.Text;
 using aplibsharp;
 namespace appack
 {
@@ -22,16 +25,46 @@ namespace appack
             if (command == "e")
             {
                 output = aplib.encode(input);
+                output = AddHeader(input, output);
             }
             else if (command == "d")
             {
-                output = aplib.decode(input);
+                byte[] compressed = input;
+                bool goodHeader = true;
+                bool hasHeader = input[0] == 'A' && input[1] == 'P' && input[2] == '3' && input[3] == '2';
+                if (hasHeader)
+                {
+                    compressed = input[24..];
+                    goodHeader &= BitConverter.ToUInt32(input[4..8]) == 24;
+                    goodHeader &= BitConverter.ToUInt32(input[8..12]) == (input.Length - 24);
+                    goodHeader &= BitConverter.ToUInt32(input[12..16]) == Crc32.HashToUInt32(compressed);
+                }
+                output = aplib.decode(compressed);
+                if (hasHeader)
+                {
+                    goodHeader &= BitConverter.ToUInt32(input[16..20]) == output.Length;
+                    goodHeader &= BitConverter.ToUInt32(input[20..24]) == Crc32.HashToUInt32(output);
+                    if (!goodHeader) Console.WriteLine("INVALID HEADER!");
+                }
             }
 
             if (output.Length > 0)
             {
                 SaveFile(output, savename);
             }
+        }
+
+        private static byte[] AddHeader(byte[] input, byte[] compressed)
+        {
+            var buf = new MemoryStream();
+            buf.Write(Encoding.ASCII.GetBytes("AP32"));
+            buf.Write(BitConverter.GetBytes((UInt32)0x18));
+            buf.Write(BitConverter.GetBytes((UInt32)compressed.Length));
+            buf.Write(BitConverter.GetBytes(Crc32.HashToUInt32(compressed)));
+            buf.Write(BitConverter.GetBytes((UInt32)input.Length));
+            buf.Write(BitConverter.GetBytes(Crc32.HashToUInt32(input)));
+            buf.Write(compressed);
+            return buf.ToArray();
         }
 
         private static byte[] LoadFile(string filename)
