@@ -75,11 +75,13 @@ namespace aplibsharp
             int runlength = 0;
             int maxlengthl = 0;
             int maxlengthr = 0;
-            Parallel.Invoke
+            esa.edges_left(i, edgesl, ref edgeslc, ref runlength, ref maxlengthl);
+            esa.edges_right(i, edgesr, ref edgesrc, ref runlength, ref maxlengthr);
+            /*Parallel.Invoke
             (
                 () => esa.edges_left(i, edgesl, ref edgeslc, ref runlength, ref maxlengthl),
                 () => esa.edges_right(i, edgesr, ref edgesrc, ref runlength, ref maxlengthr)
-            );
+            );*/
             if (runlength > constant.threshold_greedy_runlength)
             {
                 runlength_index = i;
@@ -97,7 +99,19 @@ namespace aplibsharp
 
         static private void expand(state state, esa esa, ValueTuple<int, int>[] edgesl, ValueTuple<int, int>[] edgesr, int edgeslcount, int edgesrcount, state[] cslarr, state[] csrarr, state[] rsarr)
         {
-            Parallel.For(0, edgeslcount, i =>
+            for (int i = 0; i < edgeslcount; i++)
+            {
+                int length = edgesl[i].Item1;
+                int offset = edgesl[i].Item2;
+                expand(state, i, length, offset, esa, ref cslarr[i], ref rsarr[offset]);
+            }
+            for (int i = 0; i < edgesrcount; i++)
+            {
+                int length = edgesr[i].Item1;
+                int offset = edgesr[i].Item2;
+                expand(state, i, length, offset, esa, ref csrarr[i], ref rsarr[offset]);
+            }
+            /*Parallel.For(0, edgeslcount, i =>
             {
                 int length = edgesl[i].Item1;
                 int offset = edgesl[i].Item2;
@@ -108,7 +122,7 @@ namespace aplibsharp
                 int length = edgesr[i].Item1;
                 int offset = edgesr[i].Item2;
                 expand(state, i, length, offset, esa, ref csrarr[i], ref rsarr[offset]);
-            });
+            });*/
         }
 
         static private void expand(state state, int edgep, int length, int offset, esa esa, ref state cstate, ref state rstate)
