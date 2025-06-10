@@ -3,7 +3,7 @@
     "appack": {
       "commandName": "Project",
       "commandLineArgs": "e boxmon-fw.bin boxmon-fw.binz",
-      "workingDirectory": "C:\\proj\\aurora\\aplib-packer\\appack\\bin\\Release\\netcoreapp3.1\\win-x64-publish"
+      "workingDirectory": "C:\\proj\\aurora\\aplib-packer\\appack\\bin\\Release\\netcoreapp3.1\\win-x64"
     }
   }
 }
