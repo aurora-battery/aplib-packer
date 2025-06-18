@@ -129,7 +129,7 @@ namespace appack
 
         private static void PrintUsage()
         {
-            System.Console.WriteLine("appack 1.3");
+            System.Console.WriteLine("appack 1.3 (AP32 header, 32k max offset)");
             System.Console.WriteLine();
             System.Console.WriteLine("Usage:");
             System.Console.WriteLine("appack d|e infile outfile");
